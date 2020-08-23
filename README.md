@@ -14,13 +14,13 @@ TM1637 8-Segments 0.36INCH Digital Display Tube 4-Digit LED Module.
 # Software requiment
 python-periphery library.   
 
-'''
+```
 sudo apt update
 sudo apt install git
 git clone https://github.com/vsergeev/python-periphery.git
 cd python-periphery/
 sudo python setup.py install
-'''
+```
 
 # Wireing
 |LED Module|---|Raspberry Pi|
