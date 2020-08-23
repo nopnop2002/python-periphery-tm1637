@@ -29,7 +29,6 @@ sudo python setup.py install
 |DIO|---|Pin#3|
 |GND|---|GND|
 |5V|---|3V3|
-|RST|---|RESET|
 
 # Setup
 You have to change this line.   
