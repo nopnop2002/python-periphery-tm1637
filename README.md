@@ -31,6 +31,12 @@ sudo python setup.py install
 |5V|---|3V3|
 
 # Setup
+```
+git clone https://github.com/nopnop2002/python-periphery-tm1637
+cd python-periphery-tm1637/
+vi tm1637.py
+```
+
 You have to change this line.   
 ```
 CLK = 3
@@ -50,4 +56,7 @@ DIO = 2
 |Orange Pi RK3399|44|43|
 |Orange Pi 4|65|64|
 
+# Start demo
+sudo python ./tm1637.py
+```
 
