@@ -57,6 +57,6 @@ DIO = 2
 |Orange Pi 4|65|64|
 
 # Start demo
+```
 sudo python ./tm1637.py
 ```
-
