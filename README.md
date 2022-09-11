@@ -16,10 +16,10 @@ python-periphery library.
 
 ```
 sudo apt update
-sudo apt install git
+sudo apt install git python3-pip python3-setuptools
 git clone https://github.com/vsergeev/python-periphery.git
 cd python-periphery/
-sudo python setup.py install
+python3 -m pip install python-periphery
 ```
 
 # Wireing
