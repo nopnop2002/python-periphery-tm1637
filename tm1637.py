@@ -13,8 +13,8 @@ from time import time, sleep, localtime
 
 from periphery import GPIO
 
-CLK = 3
-DIO = 2
+CLK = 3 # GPIO for CLK
+DIO = 2 # GPIO for DIO
 
 """
 	  A
