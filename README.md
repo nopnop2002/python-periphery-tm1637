@@ -39,8 +39,8 @@ vi tm1637.py
 If you use it on something other than Raspberry Pi, you need to change the following:
 
 ```
-CLK = 3 // GPIO for CLK
-DIO = 2 // GPIO for DIO
+CLK = 3 # GPIO for CLK
+DIO = 2 # GPIO for DIO
 ```
 
 ||CLK|DIO|
