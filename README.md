@@ -36,8 +36,8 @@ git clone https://github.com/nopnop2002/python-periphery-tm1637
 cd python-periphery-tm1637/
 vi tm1637.py
 ```
+If you use it on something other than Raspberry Pi, you need to change the following:
 
-You have to change this line.   
 ```
 CLK = 3
 DIO = 2
@@ -58,5 +58,5 @@ DIO = 2
 
 # Start demo
 ```
-sudo python ./tm1637.py
+python3 ./tm1637.py
 ```
