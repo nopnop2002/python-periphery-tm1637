@@ -236,9 +236,9 @@ def demo(tm):
         while True:
             show_clock(tm, 20, ANIM_DELAY)
             show_ip_address(tm, ANIM_DELAY)
-            show_on_stopped_process(tm, "lighttpd", ANIM_DELAY)
-            show_on_stopped_process(tm, "mysql", ANIM_DELAY)
-            show_on_stopped_process(tm, "php7.4-fpm", ANIM_DELAY)
+            #show_on_stopped_process(tm, "lighttpd", ANIM_DELAY)
+            #show_on_stopped_process(tm, "mysql", ANIM_DELAY)
+            #show_on_stopped_process(tm, "php7.4-fpm", ANIM_DELAY)
             show_on_high_cpu_thermal(tm, 60, ANIM_DELAY)
             show_on_low_memory(tm, 131072, ANIM_DELAY)
             show_on_full_storage(tm, 85, ANIM_DELAY)
