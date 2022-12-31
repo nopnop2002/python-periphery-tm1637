@@ -222,9 +222,9 @@ def show_on_high_cpu_thermal(tm, threshold_celsius, delay):
             show_text_sliding(tm, "cpu high "+str(text//1000)+" C", delay)
 
 def show_on_users(tm, delay):
-        text = str(subprocess.check_output("uptime", shell=True).strip(), encoding="ascii").split(",")[1]
-        if "  0 users" != text:
-            show_text_sliding(tm, text, delay)
+        text = str(subprocess.check_output("uptime | grep -o ....user.", shell=True).strip(), encoding="ascii")
+        if "  0" not in text:
+            show_text_sliding(tm, text.strip(","), delay)
 
 def show_on_stopped_process(tm, process_name, delay):
         text = str(subprocess.check_output(f"service {process_name} status", shell=True).strip(), encoding="utf8")
