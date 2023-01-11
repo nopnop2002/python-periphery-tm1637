@@ -1,8 +1,21 @@
 '''
-python-periphery TM1637 4Digits 8Segment LCD example
+python-periphery TM1637 4 digit 8 segment module driver
+Ported from: https://github.com/johnlr/raspberrypi-tm1637
 
-I ported from here
-https://github.com/johnlr/raspberrypi-tm1637
+Please setup the CLK and DIO default pin values: _TM1637_CLK, _TM1637_DIO
+
+[DEVICE NAME]              [CLK]  [DIO]
+----------------------------------------
+Raspberry Pi                3      2
+Orange Pi Allwinner H2+     11     12
+Orange Pi Allwinner H3      11     12
+Orange Pi Allwinner H5      11     12
+Orange Pi Allwinner A64     226    227
+Orange Pi 3                 121    122
+Orange Pi Lite2             229    230
+Orange Pi OnePlus           229    230
+Orange Pi RK3399            44     43
+Orange Pi 4                 65     64
 
 '''
 
@@ -14,22 +27,11 @@ from time import time, sleep, localtime
 
 from periphery import GPIO
 
-CLK        = 11    # GPIO for CLK
-DIO        = 12    # GPIO for DIO
-BRIGHT     = 0xA   # from 0x0 to 0xF
-ANIM_DELAY = 0.375 # animation delay in seconds
-
-'''
-      A
-     ---
-  F |   | B
-     -G-
-  E |   | C
-     ---
-      D
-
-'''
-
+# These are the default values used on creation of a TM1637 type object:
+_TM1637_CLK        = 11    # Default GPIO for CLK
+_TM1637_DIO        = 12    # Default GPIO for DIO
+_TM1637_BRIGHT     = 0xA   # Default brightness from 0x0 to 0xF
+_TM1637_ANIM_DELAY = 0.2   # Default animation delay in seconds
 
 class TM1637:
     I2C_COMM1 = 0x40
@@ -45,7 +47,7 @@ class TM1637:
       # C          d          E          F
         0b0111001, 0b1011110, 0b1111001, 0b1110001
         ]
-    BOTTOM_TRANSITION = dict(zip(HEX_DIGIT_TO_SEGMENT, [
+    SEGMENT_TO_DOWN_ANIM = dict(zip(HEX_DIGIT_TO_SEGMENT, [
       # 0-         1-         2-         3-
         0b1010100, 0b0000100, 0b1001100, 0b1001100,
       # 4-         5-         6-         7-
@@ -55,7 +57,7 @@ class TM1637:
       # C-         d-         E-         F-
         0b1010000, 0b0001100, 0b1011000, 0b1011000
         ] ))
-    BOTTOM_TRANSITION.update({0:0})
+    SEGMENT_TO_DOWN_ANIM.update({0:0})
     ASCII_TO_SEGMENT = [
       # NUL   SOH   STX   ETX   EOT   ENQ   ACK   BEL   BS    HT    LF    VT
         0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -81,17 +83,19 @@ class TM1637:
         0x64, 0x6E, 0x5B, 0,    0,    0,    0,    0
         ]
         
-    def __init__(self, clk, dio, brightness):
+    def __init__(self, clk=_TM1637_CLK, dio=_TM1637_DIO, brightness=_TM1637_BRIGHT):
         self.clk = clk
         self.dio = dio
         self.brightness = brightness
 
+    def gpio_begin(self):
         self.gpio_clk = GPIO(self.clk, "out")
         self.gpio_dio = GPIO(self.dio, "out")
-
-    def bit_delay(self):
-        sleep(0.001)
-        return
+        
+    def gpio_end(self):
+        self.set_segments([0,0,0,0])
+        self.gpio_clk.close()
+        self.gpio_dio.close()
    
     def set_segments(self, segments, pos=0):
         # Write COMM1
@@ -148,115 +152,136 @@ class TM1637:
                 self.gpio_dio = GPIO(self.dio, "in")
         self.gpio_dio = GPIO(self.dio, "out")
 
+def show_text_sliding(tm, text, delay=_TM1637_ANIM_DELAY):
+    segments = [0,0,0,0]
+    for i in range(len(text)):
+        segments[0] = segments[1]
+        segments[1] = segments[2]
+        segments[2] = segments[3]
+        segments[3] = tm.ASCII_TO_SEGMENT[ord(text[i:i+1])]
+        tm.set_segments(segments)
+        sleep(delay)
+    for i in range(4):
+        segments[0] = segments[1]
+        segments[1] = segments[2]
+        segments[2] = segments[3]
+        segments[3] = 0
+        tm.set_segments(segments)
+        sleep(delay)
 
+def show_ip_address(tm, delay=_TM1637_ANIM_DELAY):
+    shell = subprocess.check_output(
+      "hostname -I", 
+      shell=True
+    )
+    text = str(shell.strip(), encoding="ascii")
+    show_text_sliding(tm, "IP "+text, delay)
 
-
-def show_text_sliding(tm, text, delay):
-        segments = [0,0,0,0]
-        for i in range(len(text)):
-            segments[0] = segments[1]
-            segments[1] = segments[2]
-            segments[2] = segments[3]
-            segments[3] = tm.ASCII_TO_SEGMENT[ord(text[i:i+1])]
-            tm.set_segments(segments)
-            sleep(delay)
-        for i in range(4):
-            segments[0] = segments[1]
-            segments[1] = segments[2]
-            segments[2] = segments[3]
-            segments[3] = 0
-            tm.set_segments(segments)
-            sleep(delay)
-
-def show_ip_address(tm, delay):
-        text = str(subprocess.check_output("hostname -I", shell=True).strip(), encoding="ascii")
-        show_text_sliding(tm, "IP "+text, delay)
-
-def show_clock(tm, duration, delay):
-        segments = [0,0,0,0]
-        fsegments = [0,0,0,0]
+def show_clock(tm, duration, delay=_TM1637_ANIM_DELAY, update_rate=1):
+    duration = duration // update_rate
+    if duration == 0:
+      duration = 1
+    segments = [0,0,0,0]
+    bg_segments = [0,0,0,0]
+    t = localtime()
+    bg_segments[0] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour // 10] if t.tm_hour // 10 else 0
+    bg_segments[1] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour % 10]
+    bg_segments[2] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min // 10]
+    bg_segments[3] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min % 10]
+    for i in range(4):
+        segments[3-i] = tm.SEGMENT_TO_DOWN_ANIM[bg_segments[3-i]]
+        tm.set_segments(segments)
+        sleep(delay)
+        segments[3-i] = bg_segments[3-i]
+        tm.set_segments(segments)
+        sleep(delay)
+    for i in range(int(duration)):
         t = localtime()
-        fsegments[0] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour // 10] if t.tm_hour // 10 else 0
-        fsegments[1] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour % 10]
-        fsegments[2] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min // 10]
-        fsegments[3] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min % 10]
-        for i in range(4):
-            segments[3-i] = tm.BOTTOM_TRANSITION[fsegments[3-i]]
-            tm.set_segments(segments)
-            sleep(delay)
-            segments[3-i] = fsegments[3-i]
-            tm.set_segments(segments)
-            sleep(delay)
-        for i in range(int(duration)):
-            t = localtime()
-            sleep(1 - time() % 1)
-            segments[0] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour // 10] if t.tm_hour // 10 else 0
-            segments[1] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour % 10]
-            segments[2] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min // 10]
-            segments[3] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min % 10]
-            tm.set_segments([segments[0], 0x80 + segments[1], segments[2], segments[3]])
-            sleep(.5)
-            tm.set_segments([segments[0], segments[1], segments[2], segments[3]])
-        for i in range(4):
-            segments[3-i] = tm.BOTTOM_TRANSITION[segments[3-i]]
-            tm.set_segments(segments)
-            sleep(delay)
-            segments[3-i] = 0
-            tm.set_segments(segments)
-            sleep(delay)
+        sleep(1 - time() % 1)
+        segments[0] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour // 10] if t.tm_hour // 10 else 0
+        segments[1] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_hour % 10]
+        segments[2] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min // 10]
+        segments[3] = tm.HEX_DIGIT_TO_SEGMENT[t.tm_min % 10]
+        tm.set_segments([segments[0], 0x80 + segments[1], segments[2], segments[3]])
+        sleep(update_rate-1 + 0.5)
+        tm.set_segments([segments[0], segments[1], segments[2], segments[3]])
+    for i in range(4):
+        segments[3-i] = tm.SEGMENT_TO_DOWN_ANIM[segments[3-i]]
+        tm.set_segments(segments)
+        sleep(delay)
+        segments[3-i] = 0
+        tm.set_segments(segments)
+        sleep(delay)
 
-def show_on_full_storage(tm, threshold_percent, delay):
-        text = str(subprocess.check_output("df | sed 1d | sort -srnk 5 | tr -d '%' | tr -s ' ' ',' | cut -d, -f1,5", shell=True).strip(), encoding="ascii").split("\n")
-        for row in range(len(text)):
-            if int(text[row].split(",")[1]) >= threshold_percent:
-                show_text_sliding(tm, text[row].split(",")[0]+" full", delay)
+def show_on_full_storage(tm, threshold_percent, delay=_TM1637_ANIM_DELAY):
+    shell = subprocess.check_output(
+      "df | sed 1d | sort -srnk 5 | tr -d '%' | tr -s ' ' ',' | cut -d, -f1,5", 
+      shell=True
+    )
+    text = str(shell.strip(), encoding="ascii").split("\n")
+    for row in range(len(text)):
+        if int(text[row].split(",")[1]) >= threshold_percent:
+            show_text_sliding(tm, text[row].split(",")[0]+" full", delay)
 
-def show_on_low_memory(tm, threshold_kib, delay):
-        text = int(str(subprocess.check_output("cat /proc/meminfo | grep MemA | cut -d':' -f2 | cut -c-11", shell=True).strip(), encoding="ascii"))
-        if text < threshold_kib:
-            show_text_sliding(tm, "ram "+str(text//1024)+" MiB left", delay)
+def show_on_low_memory(tm, threshold_kib, delay=_TM1637_ANIM_DELAY):
+    shell = subprocess.check_output(
+      "cat /proc/meminfo | grep MemA | cut -d':' -f2 | cut -c-11", 
+      shell=True
+    )
+    value = int(str(shell.strip(), encoding="ascii"))
+    if value < threshold_kib:
+        show_text_sliding(tm, "ram "+str(value//1024)+" MiB left", delay)
 
-def show_on_high_cpu_thermal(tm, threshold_celsius, delay):
-        text = int(str(subprocess.check_output("cat /sys/devices/virtual/thermal/thermal_zone0/temp", shell=True).strip(), encoding="ascii"))
-        if text >= threshold_celsius*1000:
-            show_text_sliding(tm, "cpu high "+str(text//1000)+" C", delay)
+def show_on_high_cpu_thermal(tm, threshold_celsius, delay=_TM1637_ANIM_DELAY):
+    shell = subprocess.check_output(
+      "cat /sys/devices/virtual/thermal/thermal_zone0/temp", 
+      shell=True
+    )
+    value = int(str(shell.strip(), encoding="ascii"))
+    if value >= threshold_celsius*1000:
+        show_text_sliding(tm, "cpu high "+str(value//1000)+" C", delay)
 
-def show_on_users(tm, delay):
-        text = str(subprocess.check_output("uptime | grep -o ....user.", shell=True).strip(), encoding="ascii")
-        if "0 users" != text:
-            show_text_sliding(tm, text.strip(","), delay)
+def show_on_users(tm, delay=_TM1637_ANIM_DELAY):
+    shell = subprocess.check_output(
+      "uptime | grep -o ....user.", 
+      shell=True
+    )
+    text = str(shell.strip(), encoding="ascii")
+    if text != "0 users":
+        show_text_sliding(tm, text.strip(","), delay)
 
-def show_on_stopped_process(tm, process_name, delay):
-        text = str(subprocess.check_output(f"service {process_name} status", shell=True).strip(), encoding="utf8")
-        if "running" not in text:
-            show_text_sliding(tm, f"{process_name} stopped", ANIM_DELAY)
+def show_on_stopped_process(tm, process_name, delay=_TM1637_ANIM_DELAY):
+    shell = subprocess.check_output(
+      f"service {process_name} status", 
+      shell=True
+    )
+    text = str(shell.strip(), encoding="utf8")
+    if "running" not in text:
+        show_text_sliding(tm, f"{process_name} stopped", delay)
 
 def demo(tm):
-        # some commands might not work as intended depending on your architecture and distro
-        while True:
-            show_clock(tm, 20, ANIM_DELAY)
-            show_ip_address(tm, ANIM_DELAY)
-            #show_on_stopped_process(tm, "lighttpd", ANIM_DELAY)
-            #show_on_stopped_process(tm, "mysql", ANIM_DELAY)
-            #show_on_stopped_process(tm, "php7.4-fpm", ANIM_DELAY)
-            show_on_high_cpu_thermal(tm, 60, ANIM_DELAY)
-            show_on_low_memory(tm, 131072, ANIM_DELAY)
-            show_on_full_storage(tm, 85, ANIM_DELAY)
-            show_on_users(tm, ANIM_DELAY)
-            sleep(20)
+    while True:
+        show_clock(tm, 10, update_rate=5) 
+        # Higher clock update rate can lower CPU impact at the cost of lower accuracy
+        show_ip_address(tm)
+        show_on_stopped_process(tm, "lighttpd")
+        show_on_stopped_process(tm, "mysql")
+        show_on_stopped_process(tm, "php7.4-fpm")
+        # Make sure your distro supports the systemd service command
+        show_on_high_cpu_thermal(tm, 60)
+        show_on_low_memory(tm, 131072)
+        show_on_full_storage(tm, 85)
+        show_on_users(tm)
+        sleep(1)
 
 if __name__ == "__main__":
-    gpio_clk = GPIO(CLK, "out")
-    gpio_dio = GPIO(DIO, "out")
-
-    tm = TM1637(CLK, DIO, BRIGHT)
-
+    TM = TM1637()
+    TM.gpio_begin()
+    
     try:
-        demo(tm)
-
+        demo(TM)
+    
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt")
-
-    tm.set_segments([0,0,0,0])
-    gpio_clk.close()
-    gpio_dio.close()
+    
+    TM.gpio_end()
