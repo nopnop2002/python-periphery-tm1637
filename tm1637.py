@@ -24,8 +24,8 @@ from time import time, sleep, localtime
 
 from periphery import GPIO
 
-_DEF_TM1637_CLK = 11           # Default GPIO for CLK
-_DEF_TM1637_DIO = 12           # Default GPIO for DIO
+_DEF_TM1637_CLK = 3            # Default GPIO for CLK
+_DEF_TM1637_DIO = 2            # Default GPIO for DIO
 _DEF_TM1637_BRIGHT = 0xA       # Default brightness from 0x0 to 0xF
 _DEF_TM1637_ANIM_DELAY = 0.2   # Default animation delay in seconds
 
