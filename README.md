@@ -66,7 +66,6 @@ If you use Pin#3 and Pin#5, it will be as follows.
 |Orange Pi Allwinner H5|11|12|
 |Orange Pi Allwinner A64|226|227|
 |Orange Pi 3|121|122|
-|Orange Pi Zero|11|12|
 |Orange Pi Lite2|229|230|
 |Orange Pi OnePlus|229|230|
 |Orange Pi RK3399|44|43|
