@@ -45,7 +45,7 @@ git clone https://github.com/nopnop2002/python-periphery-tm1637
 cd python-periphery-tm1637/
 vi tm1637.py
 ```
-If you use this module on something other than Raspberry Pi, you should change the following:
+If you use this module on something other than Raspberry Pi, you will need to change the GPIO.   
 ```
 $ python3 tm1637.py --help
 usage: tm1637.py [-h] [--clk CLK] [--dio DIO]
@@ -56,9 +56,9 @@ optional arguments:
   --dio DIO   DIO GPIO
 ```
 
-Use the next table if you are not running this on a Raspberry Pi.   
+If you use Pin#3 and Pin#5, it will be as follows.   
 
-||CLK|DIO|
+||CLK(Pin#5)|DIO(Pn#3)|
 |:-:|:-:|:-:|
 |Raspberry Pi|3|2|
 |Orange Pi Allwinner H2+|11|12|
