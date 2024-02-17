@@ -30,13 +30,14 @@ python3 -m pip install python-periphery
 
 # Wiring
 |LED Module|Raspberry Pi|
-|:-:|:-:|
-|CLK|Pin#5|
-|DIO|Pin#3|
-|GND|GND|
-|5V or 3V3|3V3|
+|:-:|:-:|:-:|
+|CLK|Pin#5|(*1)|
+|DIO|Pin#3|(*1)|
+|GND|GND||
+|5V or 3V3|3V3||
 
-(Use the next table if you are not running this on a Raspberry Pi)
+(*1)
+You can use any GPIO you like in the startup arguments.   
 
 # Setup
 ```
@@ -46,10 +47,16 @@ vi tm1637.py
 ```
 If you use this module on something other than Raspberry Pi, you should change the following:
 ```
-_DEF_TM1637_CLK = ##           # Default GPIO for CLK
-_DEF_TM1637_DIO = ##           # Default GPIO for DIO
+$ python3 tm1637.py --help
+usage: tm1637.py [-h] [--clk CLK] [--dio DIO]
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --clk CLK   CLK GPIO
+  --dio DIO   DIO GPIO
 ```
-These default names are loaded as implicit parameters on creation of an instance of TM1637, but other values can be passed as well to manage multiple displays at once. In that case also make sure to export all GPIO pins used as "out" before creation (see the first lines of the \_\_main\_\_).
+
+Use the next table if you are not running this on a Raspberry Pi.   
 
 ||CLK|DIO|
 |:-:|:-:|:-:|
@@ -59,6 +66,7 @@ These default names are loaded as implicit parameters on creation of an instance
 |Orange Pi Allwinner H5|11|12|
 |Orange Pi Allwinner A64|226|227|
 |Orange Pi 3|121|122|
+|Orange Pi Zero|11|12|
 |Orange Pi Lite2|229|230|
 |Orange Pi OnePlus|229|230|
 |Orange Pi RK3399|44|43|
