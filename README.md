@@ -33,7 +33,7 @@ python-periphery is a highly compatible library.
 Available for most Pi boards.   
 
 # Wiring
-|LED Module|Raspberry Pi|
+|LED Module|Raspberry Pi||
 |:-:|:-:|:-:|
 |CLK|Pin#5|(*1)|
 |DIO|Pin#3|(*1)|
