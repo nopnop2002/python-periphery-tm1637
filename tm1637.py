@@ -30,10 +30,10 @@ _DEF_TM1637_BRIGHT = 0xA	   # Default brightness from 0x0 to 0xF
 _DEF_TM1637_ANIM_DELAY = 0.2   # Default animation delay in seconds
 
 def _which(executable):
-	return str(subprocess.check_output(
+	return subprocess.check_output(
 		["which", executable],
 		shell=False
-	))[2:-3]
+	).decode('utf-8').strip()
 
 _hostname = _which("hostname")
 _cat = _which("cat")
@@ -179,10 +179,10 @@ def show_text_sliding(tm, text, delay=_DEF_TM1637_ANIM_DELAY):
 		sleep(delay)
 
 def show_ip_address(tm, delay=_DEF_TM1637_ANIM_DELAY):
-	text = str(subprocess.check_output(
+	text = subprocess.check_output(
 		[_hostname, "-I"],
 		shell=False
-	))[2:-4]
+	).decode('utf-8').strip()
 	show_text_sliding(tm, "IP "+text, delay)
 
 def show_clock(tm, duration, delay=_DEF_TM1637_ANIM_DELAY, update_rate=1):
@@ -222,19 +222,19 @@ def show_clock(tm, duration, delay=_DEF_TM1637_ANIM_DELAY, update_rate=1):
 		sleep(delay)
 
 def show_on_full_storage(tm, threshold_percent, delay=_DEF_TM1637_ANIM_DELAY):
-	text = str(subprocess.check_output(
+	text = subprocess.check_output(
 		_df,
 		shell=False
-	))[2:-1]
+	).decode('utf-8').strip()
 	for row in text.split("\\n")[1:-1]:
 		if int(row.split(' ')[-2].strip('%')) >= threshold_percent:
 			show_text_sliding(tm, row.split(' ')[0]+" full", delay)
 
 def show_on_low_memory(tm, threshold_kib, delay=_DEF_TM1637_ANIM_DELAY):
-	value = int(str(subprocess.check_output(
+	value = int(subprocess.check_output(
 		[_cat, "/proc/meminfo"],
 		shell=False
-	)).split("MemAvailable:", 1)[1].split("kB", 1)[0].strip())
+	).decode('utf-8').split("MemAvailable:", 1)[1].split("kB", 1)[0].strip())
 	if value < threshold_kib:
 		show_text_sliding(tm, "ram "+str(value//1024)+" MiB left", delay)
 
@@ -242,24 +242,24 @@ def show_on_high_cpu_thermal(tm, threshold_celsius, sensor, delay=_DEF_TM1637_AN
 	value = int(subprocess.check_output(
 		[_cat, sensor],
 		shell=False
-	))
+	).decode('utf-8'))
 	if value >= threshold_celsius*1000:
 		show_text_sliding(tm, "cpu high "+str(value//1000)+" C", delay)
 
 def show_on_users(tm, delay=_DEF_TM1637_ANIM_DELAY):
-	text = str(subprocess.check_output(
+	text = subprocess.check_output(
 		_uptime,
 		shell=False
-	)).split("user", 1)[0].split(",")[-1].strip()
+	).decode('utf-8').split("user", 1)[0].split(",")[-1].strip()
 	if text != "0":
 		show_text_sliding(tm, text+" users", delay)
 
 def show_on_stopped_process(tm, process_name, delay=_DEF_TM1637_ANIM_DELAY):
 	try:
-		text = str(subprocess.check_output(
+		text = subprocess.check_output(
 			[_service, process_name, "status"],
 			shell=False
-		))[2:-1]
+		).decode('utf-8').strip()
 		if "running" not in text:
 			show_text_sliding(tm, process_name+" stopped", delay)
 	except subprocess.CalledProcessError:
