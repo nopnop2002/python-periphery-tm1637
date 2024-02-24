@@ -50,7 +50,7 @@ RPi reads data from DIO, so it must be 3V3.
 ```
 git clone https://github.com/nopnop2002/python-periphery-tm1637
 cd python-periphery-tm1637/
-vi tm1637.py
+python3 tm1637.py
 ```
 If you use this module on something other than Raspberry Pi, you will need to change the GPIO.   
 ```
