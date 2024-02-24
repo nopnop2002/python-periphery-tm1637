@@ -38,10 +38,13 @@ Available for most Pi boards.
 |CLK|Pin#5|(*1)|
 |DIO|Pin#3|(*1)|
 |GND|GND||
-|5V or 3V3|3V3||
+|5V|3V3|(*2)|
 
-(*1)
+(*1)   
 You can use any GPIO you like in the startup arguments.   
+
+(*2)   
+RPi reads data from DIO, so it must be 3V3.   
 
 # Setup
 ```
