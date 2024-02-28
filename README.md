@@ -79,6 +79,8 @@ If you use Pin#3 and Pin#5, it will be as follows.
 |Orange Pi OnePlus|229|230||
 |Orange Pi RK3399|44|43||
 |Orange Pi 4|65|64||
+|Nano Pi Allwinner H3|11|12||
+|Nano Pi Allwinner H5|11|12||
 
 Other default values can be set for more parameters as well.
 ```
