@@ -82,7 +82,7 @@ If you use Pin#3 and Pin#5, it will be as follows.
 |Nano Pi Allwinner H3|11|12||
 |Nano Pi Allwinner H5|11|12||
 
-Other default values can be set for more parameters as well.
+Other default values are set as follows:   
 ```
 _DEF_TM1637_BRIGHT = 0xA       # Default brightness from 0x0 to 0xF
 _DEF_TM1637_ANIM_DELAY = 0.2   # Default animation delay in seconds
