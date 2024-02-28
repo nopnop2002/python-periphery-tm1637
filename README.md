@@ -96,14 +96,23 @@ show_on_high_cpu_thermal(tm, 50, "/sys/devices/virtual/thermal/thermal_zone0/tem
 ```
 python3 tm1637.py
 ```
+Specify GPIO.
+```
+python3 tm1637.py --clk=11 --dio=12
+```
 Privilege elevation might be required.
 ```
 sudo -E python3 tm1637.py
 ```
 
+
 # Display text
 ```
 python3 tm1637.py --text="any_text"
+```
+Specify GPIO.
+```
+python3 tm1637.py --text="any_text" --clk=11 --dio=12
 ```
 Privilege elevation might be required.
 ```
