@@ -78,7 +78,7 @@ If you use Pin#3 and Pin#5, it will be as follows.
 |Orange Pi Lite2|229|230||
 |Orange Pi OnePlus|229|230||
 |Orange Pi RK3399|44|43||
-|Orange Pi 4|65|64|=
+|Orange Pi 4|65|64||
 
 Other default values can be set for more parameters as well.
 ```
