@@ -41,7 +41,7 @@ Available for most Pi boards.
 |5V|3V3|(*2)|
 
 (*1)   
-You can use any GPIO you like in the startup arguments.   
+You can use any GPIO with startup arguments.   
 
 (*2)   
 RPi reads data from DIO, so it must be 3V3.   
