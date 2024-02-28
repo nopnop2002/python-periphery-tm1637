@@ -92,6 +92,7 @@ Remember to change your CPU temperature sensor in the script if necessary, insid
 show_on_high_cpu_thermal(tm, 50, "/sys/devices/virtual/thermal/thermal_zone0/temp")
 # Please change your cpu sensor path if different
 ```
+
 # Start Auto Demo
 ```
 python3 tm1637.py
