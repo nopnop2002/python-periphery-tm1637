@@ -87,7 +87,8 @@ Other default values are set as follows:
 _DEF_TM1637_BRIGHT = 0xA       # Default brightness from 0x0 to 0xF
 _DEF_TM1637_ANIM_DELAY = 0.2   # Default animation delay in seconds
 ```
-Remember to change your CPU temperature sensor in the script if necessary, inside \_demo():
+
+If you want to display the CPU temperature, you need to change the following depending on the board.   
 ```
 show_on_high_cpu_thermal(tm, 50, "/sys/devices/virtual/thermal/thermal_zone0/temp")
 # Please change your cpu sensor path if different
