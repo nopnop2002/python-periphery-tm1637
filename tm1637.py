@@ -3,17 +3,17 @@ python-periphery TM1637 4 digit 8 segment module driver
 Ported from: https://github.com/johnlr/raspberrypi-tm1637
 Please setup the CLK and DIO default pin values: _DEF_TM1637_CLK, _DEF_TM1637_DIO
 [DEVICE NAME]			   [CLK]  [DIO]
-----------------------------------------
-Raspberry Pi				3	   2
-Orange Pi Allwinner H2+		11	   12
-Orange Pi Allwinner H3		11	   12
-Orange Pi Allwinner H5		11	   12
-Orange Pi Allwinner A64		226    227
-Orange Pi 3					121    122
-Orange Pi Lite2				229    230
-Orange Pi OnePlus			229    230
-Orange Pi RK3399			44	   43
-Orange Pi 4					65	   64
+=======================================
+Raspberry Pi --------------  3 ---  2
+Orange Pi Allwinner H2+	---	11 --- 12
+Orange Pi Allwinner H3 ---- 11 --- 12
+Orange Pi Allwinner H5 ---- 11 --- 12
+Orange Pi Allwinner A64 -- 226 -- 227
+Orange Pi 3	 ------------- 121 -- 122
+Orange Pi Lite2 ---------- 229 -- 230
+Orange Pi OnePlus -------- 229 -- 230
+Orange Pi RK3399 ---------  44 --  43
+Orange Pi 4 --------------  65 --  64
 '''
 
 #!/usr/bin/python3
@@ -24,10 +24,10 @@ from time import time, sleep, localtime
 
 from periphery import GPIO
 
-_DEF_TM1637_CLK = 11			# Default GPIO for CLK
-_DEF_TM1637_DIO = 12			# Default GPIO for DIO
-_DEF_TM1637_BRIGHT = 0xA	   # Default brightness from 0x0 to 0xF
-_DEF_TM1637_ANIM_DELAY = 0.2   # Default animation delay in seconds
+_DEF_TM1637_CLK = 3 # Default GPIO for CLK
+_DEF_TM1637_DIO = 2 # Default GPIO for DIO
+_DEF_TM1637_BRIGHT = 0xA # Default brightness from 0x0 to 0xF
+_DEF_TM1637_ANIM_DELAY = 0.2 # Default animation delay in seconds
 
 def _which(executable):
 	return subprocess.check_output(
@@ -39,7 +39,6 @@ _hostname = _which("hostname")
 _cat = _which("cat")
 _df = _which("df")
 _uptime = _which("uptime")
-_service = _which("service")
 
 class TM1637:
 	I2C_COMM1 = 0x40
@@ -178,6 +177,13 @@ def show_text_sliding(tm, text, delay=_DEF_TM1637_ANIM_DELAY):
 		tm.set_segments(segments)
 		sleep(delay)
 
+def show_text(tm, text, delay=1):
+	segments = [0]
+	for i in range(len(text)):
+		segments[0] = tm.ASCII_TO_SEGMENT[ord(text[i:i+1])]
+		tm.set_segments(segments, i)
+	sleep(delay)
+	
 def show_ip_address(tm, delay=_DEF_TM1637_ANIM_DELAY):
 	text = subprocess.check_output(
 		[_hostname, "-I"],
@@ -254,27 +260,15 @@ def show_on_users(tm, delay=_DEF_TM1637_ANIM_DELAY):
 	if text != "0":
 		show_text_sliding(tm, text+" users", delay)
 
-def show_on_stopped_process(tm, process_name, delay=_DEF_TM1637_ANIM_DELAY):
-	try:
-		text = subprocess.check_output(
-			[_service, process_name, "status"],
-			shell=False
-		).decode('utf-8').strip()
-		if "running" not in text:
-			show_text_sliding(tm, process_name+" stopped", delay)
-	except subprocess.CalledProcessError:
-		show_text_sliding(tm, "No such process", delay)
-
 def _demo(tm):
 	while True:
 		show_clock(tm, 10, update_rate=5)
 		# Higher clock update rate can lower CPU impact at the cost of lower accuracy
+		show_text(tm, "PLAY", delay=2)
+		show_text(tm, "STOP", delay=2)
 		show_ip_address(tm)
-		show_on_users(tm)
 		"""
-		show_on_stopped_process(tm, "lighttpd")
-		show_on_stopped_process(tm, "mysql")
-		show_on_stopped_process(tm, "php7.4-fpm")
+		#show_on_users(tm)
 		# Make sure your distro supports the systemd service command
 		show_on_high_cpu_thermal(tm, 50, "/sys/devices/virtual/thermal/thermal_zone0/temp")
 		# Please change your cpu sensor path if different
@@ -287,26 +281,35 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--clk', type=int, help='CLK GPIO', default=_DEF_TM1637_CLK)
 	parser.add_argument('--dio', type=int, help='DIO GPIO', default=_DEF_TM1637_DIO)
+	parser.add_argument('--text')
 	args = parser.parse_args()
-	print("args.clk={}".format(args.clk))
-	print("args.dio={}".format(args.dio))
+	# print("args.clk={}".format(args.clk))
+	# print("args.dio={}".format(args.dio))
+	# print("args.text=[{}]".format(args.text))	
 
 	# Export the GPIO pins
-	# gpio_clk = GPIO(_DEF_TM1637_CLK, "out")
-	# gpio_dio = GPIO(_DEF_TM1637_DIO, "out")
 	gpio_clk = GPIO(args.clk, "out")
 	gpio_dio = GPIO(args.dio, "out")
 
-	# TM1 = TM1637(_DEF_TM1637_CLK, _DEF_TM1637_DIO)
 	TM1 = TM1637(args.clk, args.dio)
 	TM1.gpio_begin()
 
-	# Run demo
-	try:
-		_demo(TM1)
+	if args.text is None:
+		print("Start Auto Demo. Press Cntl+C to stop.")
+		# Run auto demo
+		try:
+			_demo(TM1)
+		except KeyboardInterrupt:
+			print("\nKeyboardInterrupt")
 
-	except KeyboardInterrupt:
-		print("\nKeyboardInterrupt")
+	else:
+		if len(args.text) <= 4:
+			text = args.text
+			text = text.ljust(4)
+			# print("text=[{}]".format(text))
+			show_text(TM1, text, delay=2)
+		else:
+			show_text_sliding(TM1, args.text, _DEF_TM1637_ANIM_DELAY)
 
 	TM1.gpio_end()
 

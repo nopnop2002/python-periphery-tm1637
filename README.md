@@ -48,6 +48,7 @@ RPi reads data from DIO, so it must be 3V3.
 
 # Setup
 ```
+cd $HOME
 git clone https://github.com/nopnop2002/python-periphery-tm1637
 cd python-periphery-tm1637/
 python3 tm1637.py
@@ -55,28 +56,29 @@ python3 tm1637.py
 If you use this module on something other than Raspberry Pi, you will need to change the GPIO.   
 ```
 $ python3 tm1637.py --help
-usage: tm1637.py [-h] [--clk CLK] [--dio DIO]
+usage: tm1637.py [-h] [--clk CLK] [--dio DIO] [--text TEXT]
 
 optional arguments:
-  -h, --help  show this help message and exit
-  --clk CLK   CLK GPIO
-  --dio DIO   DIO GPIO
+  -h, --help   show this help message and exit
+  --clk CLK    CLK GPIO
+  --dio DIO    DIO GPIO
+  --text TEXT
 ```
 
 If you use Pin#3 and Pin#5, it will be as follows.   
 
-||CLK(Pin#5)|DIO(Pn#3)|
-|:-:|:-:|:-:|
-|Raspberry Pi|3|2|
-|Orange Pi Allwinner H2+|11|12|
-|Orange Pi Allwinner H3|11|12|
-|Orange Pi Allwinner H5|11|12|
-|Orange Pi Allwinner A64|226|227|
-|Orange Pi 3|121|122|
-|Orange Pi Lite2|229|230|
-|Orange Pi OnePlus|229|230|
-|Orange Pi RK3399|44|43|
-|Orange Pi 4|65|64|
+||CLK(Pin#5)|DIO(Pn#3)||
+|:-:|:-:|:-:|:-:|
+|Raspberry Pi|3|2|Default|
+|Orange Pi Allwinner H2+|11|12||
+|Orange Pi Allwinner H3|11|12||
+|Orange Pi Allwinner H5|11|12||
+|Orange Pi Allwinner A64|226|227||
+|Orange Pi 3|121|122||
+|Orange Pi Lite2|229|230||
+|Orange Pi OnePlus|229|230||
+|Orange Pi RK3399|44|43||
+|Orange Pi 4|65|64|=
 
 Other default values can be set for more parameters as well.
 ```
@@ -88,11 +90,20 @@ Remember to change your CPU temperature sensor in the script if necessary, insid
 show_on_high_cpu_thermal(tm, 50, "/sys/devices/virtual/thermal/thermal_zone0/temp")
 # Please change your cpu sensor path if different
 ```
-# Start demo
+# Start Auto Demo
 ```
 python3 tm1637.py
 ```
 Privilege elevation might be required.
 ```
 sudo -E python3 tm1637.py
+```
+
+# Display text
+```
+python3 tm1637.py --text="any_text"
+```
+Privilege elevation might be required.
+```
+sudo -E python3 tm1637.py --text="any_text"
 ```
