@@ -96,7 +96,7 @@ show_on_high_cpu_thermal(tm, 50, "/sys/devices/virtual/thermal/thermal_zone0/tem
 ```
 python3 tm1637.py
 ```
-Specify GPIO.
+When specifying GPIO.
 ```
 python3 tm1637.py --clk=11 --dio=12
 ```
@@ -110,7 +110,7 @@ sudo -E python3 tm1637.py
 ```
 python3 tm1637.py --text="any_text"
 ```
-Specify GPIO.
+When specifying GPIO.
 ```
 python3 tm1637.py --text="any_text" --clk=11 --dio=12
 ```
