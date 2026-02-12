@@ -17,7 +17,7 @@ TM1637 8 segment 0.36INCH Digital Display Tube 4 digit LED module:
   <img src="https://user-images.githubusercontent.com/6020549/90970981-5719c700-e546-11ea-8e48-ac4c0d7b5dc6.JPG" title="TM1637-2" width="43%"/>
 </p>
 
-# Software requiments
+# Software requirements
 python-periphery library.
 
 ```
